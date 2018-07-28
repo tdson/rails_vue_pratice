@@ -1,24 +1,19 @@
-# README
+# Instructions
+A sample API server has been prepared.
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Run theses commands bellow to create the database, load the schema and initialize it with the seed data.
 
-Things you may want to cover:
+```sh
+rails db:setup
+rails s
+```
 
-* Ruby version
+# API guide
 
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+| Action  | Verb   | URI Pattern    | Example payload                                   |
+|---------|--------|----------------|---------------------------------------------------|
+| Index   | GET    | /api/tasks     |                                                   |
+| Create  | POST   | /api/tasks     | `{'task': {'title': 'some text'}}`                |
+| Show    | GET    | /api/tasks/:id |                                                   |
+| Update  | PUT    | /api/tasks/:id | `{'task': {'title': 'changes', 'is_done': true}}` |
+| Destroy | DELETE | /api/tasks/:id |                                                   |
