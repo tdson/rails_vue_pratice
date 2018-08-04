@@ -79,36 +79,20 @@ index 97e5420..d7e4ee7 100644
 ```
 Mặc định ở thư mục `app/javascript/packs` có một file `hello_vue.js`, đó là một app hello world mẫu. Tạm dùng nó để vọc đã.
 
-Tiếp theo là views, sửa 2 file sau:
-
-```diff
-diff --git a/app/views/layouts/application.html.erb b/app/views/layouts/application.html.erb
-index e69de29..98ec7ed 100644
---- a/app/views/layouts/application.html.erb
-+++ b/app/views/layouts/application.html.erb
-@@ -0,0 +1,10 @@
-+<!DOCTYPE html>
-+<html lang="en" dir="ltr">
-+  <head>
-+    <meta charset="utf-8">
-+    <title>Todo Rails Vue</title>
-+  </head>
-+  <body>
-+    <%= yield %>
-+  </body>
-+</html>
-```
+Tiếp theo là views, sửa view của trang home lại như sau:
 
 ```diff
 diff --git a/app/views/home/index.html.erb b/app/views/home/index.html.erb
-index e69de29..faaadde 100644
+index 2085730..faaadde 100644
 --- a/app/views/home/index.html.erb
 +++ b/app/views/home/index.html.erb
-@@ -0,0 +1 @@
+@@ -1,2 +1 @@
+-<h1>Home#index</h1>
+-<p>Find me in app/views/home/index.html.erb</p>
 +<%= javascript_pack_tag 'hello_vue' %>
 ```
 
-`javascript_pack_tag 'hello_vue'` sẽ load app hello được khai báo ở file `app/javascript/packs/hello_vue.js` vào trang home của chúng ta.
+`javascript_pack_tag 'hello_vue'` sẽ load file js ở đường dẫn `app/javascript/packs/hello_vue.js` vào trang home của chúng ta.
 
 Bây giờ chạy `bin/server` để start server, sau đó truy cập [`localhost:5000`](localhost:5000), vâng! cổng `5000`, ko nhầm đâu.
 
@@ -143,30 +127,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
 ```diff
 diff --git a/Gemfile b/Gemfile
-index 4fcca63..f66b14e 100644
+index 0f63e9c..d98a19b 100644
 --- a/Gemfile
 +++ b/Gemfile
-@@ -28,6 +28,10 @@ gem 'jbuilder', '~> 2.5'
- # gem 'rack-cors'
- #
+@@ -31,6 +31,10 @@ gem 'jbuilder', '~> 2.5'
+ # Use Capistrano for deployment
+ # gem 'capistrano-rails', group: :development
  gem 'foreman'
 +gem 'jquery-rails'
-+gem 'jquery-turbolinks'
++# gem 'jquery-turbolinks' # use this gem if you are using turbolinks
 +gem 'materialize-sass'
 +gem 'material_icons'
 ```
 
 Tiếp theo load CSS của materialize vào file css, require js  vào `application.js`.
+
 ```diff
-diff --git a/app/assets/stylesheets/application.scss b/app/assets/stylesheets/application.scss
-index e69de29..1e0b5e7 100644
---- a/app/assets/stylesheets/application.scss
-+++ b/app/assets/stylesheets/application.scss
-@@ -0,0 +1,6 @@
+diff --git a/app/assets/stylesheets/application.css b/app/assets/stylesheets/application.css
+index d05ea0f..5e9347c 100644
+--- a/app/assets/stylesheets/application.css
++++ b/app/assets/stylesheets/application.css
+@@ -13,3 +13,10 @@
+  *= require_tree .
+  *= require_self
+  */
++
 +/* Materialize */
 +@import "materialize/components/color";
 +$primary-color: color("orange ", "accent-4") !default;
 +$secondary-color: color("orange ", "accent-1") !default;
 +@import 'materialize';
 +@import 'material_icons';
+```
+
+```diff
+diff --git a/app/assets/javascripts/application.js b/app/assets/javascripts/application.js
+index 504211e..3ed003c 100644
+--- a/app/assets/javascripts/application.js
++++ b/app/assets/javascripts/application.js
+@@ -10,5 +10,7 @@
+ // Read Sprockets README (https://github.com/rails/sprockets#sprockets-directives) for details
+ // about supported directives.
+ //
++//= require jquery
++//= require materialize
+ //= require rails-ujs
+ //= require_tree .
 ```
