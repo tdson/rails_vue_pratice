@@ -1,47 +1,50 @@
-# Vue.js in Rails
+# Vue.js in Rails todo app tutorial
 
-![Vue](https://vuejs.org/images/logo.png "The Progressive JavaScript Framework")
+![Vue](https://raw.githubusercontent.com/tdson/rails_vue_pratice/docs/assets/img/cover.png "The Progressive JavaScript Framework")
 
-### Who is using it?
-- GitLab: https://about.gitlab.com/2016/10/20/why-we-chose-vue/
-- Weex: https://weex.apache.org/guide/use-vue.html
-- Baidu: https://www.baidu.com/
-- Facebook, Netflix, Adobe, Xiaomi, Alibaba, Laracasts,...
-
-# How it works?
-![Graph](https://raw.githubusercontent.com/tdson/rails_vue_pratice/docs/assets/img/how-it-works.png "Reactivity")
-- Lấy cảm hứng từ kiến trúc Model-view-viewmodel (MVVM).
-- Sử dụng `Declarative rendering`.
-- Tracking các properties bằng getter/setters.
-
-# The vue instance
-
-```js
-var vm = new Vue({})
+## Install rails project
+Đầu tiên tạo một rails app để viết API cho app front-end. Chạy lệnh bên dưới
+```sh
+rails new todo --webpack=vue --api --skip-turbolinks --skip-coffee
 ```
-- `Vue` là hàm khởi tạo app.
+  - `--webpack=vue`: Thêm gem webpack và cài đặt các dependencies của Vue.
+  - `--api`: Tự thiết lập trước một số việc nhỏ cho app API.
+  - `--skip-turbolinks`: Skip turbolinks gem
+  - `--skip-coffee`: Không dùng CoffeeScript, app này chúng ta viết bằng JS ES6 ngon hơn nhiều.
 
-# Instance Lifecycle Hooks
+Sau khi chạy lệnh trên rails tự chạy `bundle` luôn.
 
-Khi được khởi tạo, một đối tượng Vue sẽ đi qua nhiều bước khác nhau - cài đặt quan sát dữ liệu (data observation), biên dịch template, gắn kết vào DOM, cập nhật DOM khi dữ liệu thay đổi v.v.
+Nếu các bạn chưa biết webpack là gì thì có thể đọc [ở đây](#) trước.
 
-Trong suốt tiến trình này, nó cũng sẽ thực thi một số hàm gọi là lifecycle hook, giúp người dùng thêm code của mình vào các giai đoạn (stage) cụ thể trong vòng đời của đối tượng.
-
-Dưới đây là sơ đồ vòng đời của một đối tượng Vue. Ngay lúc này thì bạn chưa cần hiểu mọi thứ trong đây, nhưng dần dần về sau khi bạn học và xây dựng thêm với Vue, sơ đồ này sẽ là một nguồn tham khảo rất hữu ích.
-![lifecycle](https://raw.githubusercontent.com/tdson/rails_vue_pratice/docs/assets/img/lifecycle.png "Lifecycle Diagram")
-
-# Directives
-
-### v-bind
-```html
-<a v-bind:href="url"></a>
-<!-- or shorthand -->
-<a :href="url"></a>
+Bài viết sẽ focus vào Vue nên mình sẽ không đi sâu vào việc viết API cho app. Các bạn có thể dùng bất cứ một server nào khác miễn cảm thấy thân quen là được. Mình đã chuẩn bị sẵn một vài API ở nhánh [`delvelop`](https://github.com/tdson/rails_vue_pratice/tree/develop), các bạn chỉ cần clone về chạy migrate và làm tiếp các bước bên dưới.
+```sh
+rails db:setup
 ```
 
-### v-on
-```html
-<a v-on:click="doSomething"></a>
-<!-- or shorthand -->
-<a @click="doSomething"></a>
+![Todo_Demo](https://raw.githubusercontent.com/tdson/rails_vue_pratice/docs/assets/img/demo.gif "A demo of todo app")
+
+## Một số bước chuẩn bị
+### Foreman
+Trong quá trình dev mình sẽ chạy `webpack` bằng webpacker riêng biệt với Rails.
+
+```diff
+diff --git a/Gemfile b/Gemfile
+index 506b795..4fcca63 100644
+--- a/Gemfile
++++ b/Gemfile
+@@ -26,6 +26,8 @@ gem 'jbuilder', '~> 2.5'
+
+ # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
+ # gem 'rack-cors'
++gem 'foreman'
+```
+
+Thêm đoạn mã sau vào `Procfile`, nếu chưa có các bạn cứ tạo mới một file ở thư mục gốc của project rails.
+```
+rails: bundle exec rails server
+webpack: ./bin/webpack-dev-server
+```
+Sau đó start foreman
+```sh
+foreman start
 ```
