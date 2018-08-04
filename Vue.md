@@ -21,6 +21,7 @@ rails db:setup
 ```
 
 Đây là hình ảnh demo sau khi làm
+
 ![Todo_Demo](https://raw.githubusercontent.com/tdson/rails_vue_pratice/docs/assets/img/demo.gif "A demo of todo app")
 
 ## Một số bước chuẩn bị
@@ -175,10 +176,10 @@ index 504211e..3ed003c 100644
  //= require_tree .
 ```
 
-## Tạo components
+## Vue instance
 Một cái nhìn sơ qua về các thành phần của app, sẽ bao gồm 2 phần như hình
 
-![Components](https://raw.githubusercontent.com/tdson/rails_vue_pratice/docs/assets/img/components.jpg)
+![Components](https://raw.githubusercontent.com/tdson/rails_vue_pratice/docs/assets/img/components.png)
 
 Phần main conent, hầu hết sự thay đổi khi bấm vào các link, chuyển trang... sẽ chỉ thay đổi ở component này, còn phần navigation bar sẽ là cố định giữa các trang.
 
@@ -281,6 +282,8 @@ Bên trong div này là component `navbar`.
 Bây giờ khởi động lại server và vào lại localhost:5000 bạn đã thấy thanh navbar như hình dưới
 
 ![Navbar](https://raw.githubusercontent.com/tdson/rails_vue_pratice/docs/assets/img/navbar.png)
+
+## Single page application với Vue-Router
 
 Tiếp theo là phần content động giữa các trang, phần này sẽ nằm ngay dưới `navbar`. Đến đây mình xin giới thiệu với các bạn một package đầu tiên mà chúng ta sẽ dùng là `vue-router`. Dùng để tạo routes cho Vue app.
 
@@ -385,3 +388,150 @@ index 7a6a746..a52af98 100644
 ```
 Thử tắt server và khởi động lại, sau đó check lại ở browser, bạn đã có thể chuyển trang mà không bị reload page. :+1:
 ![Router](https://raw.githubusercontent.com/tdson/rails_vue_pratice/docs/assets/img/router.gif)
+
+## Giao tiếp API bằng Axios
+[Axios](https://github.com/mzabriskie/axios) là một thư viện ajax rất nổi tiếng, có  lẽ mọi người đã quá quen thuộc với jQuery Ajax, nhưng hãy cứ thử thay đổi một chút xem những gì axios có thể làm được, và tại sao nó có gần 46k stars trên github.
+
+Đầu tiên cài đặt axios bằng yarn
+```sh
+yarn add axios -S
+```
+Chúng ta sẽ dùng axios để lấy list các task về và render lên component `home.vue`.
+
+Trước tiên, cùng nhìn qua cái template của trang home trước đã. Thêm đoạn HTML tạm bợ này vào file `home.vue`
+```diff
+diff --git a/app/javascript/packs/pages/home.vue b/app/javascript/packs/pages/home.vue
+index 97f372e..44674d0 100644
+--- a/app/javascript/packs/pages/home.vue
++++ b/app/javascript/packs/pages/home.vue
+@@ -1,5 +1,33 @@
+ <template>
+   <div>
+-    <h1>Index</h1>
++    <div>
++      <ul class="collection">
++        <li id="row_task_1" class="collection-item">
++          <input type="checkbox" id="task_1" />
++          <label for="task_1">Sample Task</label>
++        </li>
++        <li id="row_task_2" class="collection-item">
++          <input type="checkbox" id="task_2" />
++          <label for="task_2">Sample Task</label>
++        </li>
++        <li id="row_task_3" class="collection-item">
++          <input type="checkbox" id="task_3" />
++          <label for="task_3">Sample Task</label>
++        </li>
++      </ul>
++    </div>
++    <div class="btn">Display finished tasks</div>
++    <div id="finished-tasks" class="display_none">
++      <ul class="collection">
++        <li id="row_task_4" class="collection-item">
++          <input type="checkbox" id="'task_4" checked="checked" />
++          <label v-bind:for="task_4" class="line-through">Done Task</label>
++        </li>
++        <li id="row_task_5" class="collection-item">
++          <input type="checkbox" id="'task_5" checked="checked" />
++          <label v-bind:for="task_5" class="line-through">Done Task</label>
++        </li>
++      </ul>
++    </div>
+   </div>
+ </template>
+```
+
+Đây là kết quả:
+
+![Index template](https://raw.githubusercontent.com/tdson/rails_vue_pratice/docs/assets/img/template.png)
+
+Bây giờ công việc sẽ là tạo ra cái list kia một cách tự động bằng dữ liệu thật.
+
+Thêm đoạn script sau vào cuối file `home.vue`
+
+```html
+<script>
+import axios from 'axios'
+
+export default {
+  data: function () {
+    return {
+      tasks: []
+    }
+  },
+
+  mounted: function () {
+    this.fetchTasks()
+  },
+
+  methods: {
+    fetchTasks: function () {
+      axios.get('/api/tasks').then(
+        response => { this.tasks = this.data.tasks },
+        error => alert(error)
+      )
+    }
+  }
+}
+</script>
+```
+Dừng lại 1 chút, mình sẽ giải thích những cái cần chú ý.
+- `data`, chỗ đầu tiên các bạn nên nhìn vào chắc là đây. `data` là một hàm, hàm này sẽ return về những biến local của component đó, những biến này được dùng xuyên suốt trong nội bộ component đó và có thể truyền sang cho các component con. Cú pháp như trên nghĩa là component này sẽ có 1 biến `tasks`, là một mảng các task sẽ được gán giá trị sau khi gọi API. Để sử dụng biến này thì dùng `this.$data.tasks` hoặc cú pháp đơn giản hơn là `this.tasks`.
+- `mounted`, cũng là một hàm, mã bên trong hàm này sẽ được chạy sau khi component này được render xong, nếu so sánh với jQuery thì chỗ này giống `$(document).ready()`. Ở đây khi render xong sẽ gọi hàm `fetchTasks()` để lấy dữ liệu về từ API.
+- `methods`, đây là một object, object này sẽ chứa các hàm được khai báo để dùng trong component này. Ví dụ ở đây là hàm `fetchTasks`. Tất cả các hàm đều nằm trong object `methods` này. Để gọi hàm thì chỉ đơn giản là `this.fetchTasks()`.
+-  `axios.get`, tạo một request với method get bằng axios. Thông tin thêm vui lòng xem ở github của [axios](https://github.com/mzabriskie/axios). Để sử dụng axios thì bên trên nhớ import module của nó vào. Axios trả về một promise, `.then()` để resolve promise đó, và có thể handle error bằng cách như trên hoặc dùng catch.
+
+## Computed
+Quay trở lại việc render list, ở đây mình muốn render 2 list, một cái là tasks chưa hoàn thành, và 1 cái là tasks đã hoàn thành.
+
+Trên ý tưởng là mình có thể dùng 2 biến ở `data`, để chứa 2 list riêng biệt, ví dụ:
+```js
+data () {
+  return {
+    finishedTasks: [],
+    unfinishedTasks: []
+  }
+}
+```
+Hoặc cách khác là viết 2 hàm để lấy danh được 2 danh sách tương ứng, ví dụ:
+```js
+methods: {
+  finishedTasks: function () {
+    return this.tasks.filter(task => task.is_done)
+  },
+  unfinishedTasks: function () {
+    return this.tasks.filter(task => !task.is_done)
+  }
+}
+```
+Tuy nhiên Vue cung cấp một thứ hay hơn, lai giữa `data` và `method` đó là `computed`. Trên lý thuyết computed cũng là thuộc tính của component như data, nhưng thường nó là thuộc tính chỉ đọc, hay nói cách khác nó như là một getter, cho phép lấy data nhưng có một vài thao tác xử lý lọc/tính toán trước.
+
+Về cách viết nó hoàn toàn giống như method, thêm computed vào trong file `home.vue`
+
+```diff
+diff --git a/app/javascript/packs/pages/home.vue b/app/javascript/packs/pages/home.vue
+index af545de..bfe2cf0 100644
+--- a/app/javascript/packs/pages/home.vue
++++ b/app/javascript/packs/pages/home.vue
+@@ -42,6 +42,16 @@ export default {
+     }
+   },
+
++  computed: {
++    finishedTasks: function () {
++      return this.tasks.filter(task => task.is_done)
++    },
++
++    unfinishedTasks: function () {
++      return this.tasks.filter(task => !task.is_done)
++    }
++  },
++
+   mounted: function () {
+     this.fetchTasks()
+   },
+```
+
+Bây giờ có thể dùng `this.finishedTasks` và `this.unfinishedTasks` như data, chỉ là không dùng được phép gán (thật ra là được nhưng nó sẽ nằm ở một bài viết khác).
+
+## Vòng lặp với v-for
