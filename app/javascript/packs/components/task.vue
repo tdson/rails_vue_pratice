@@ -1,6 +1,6 @@
 <template lang="html">
   <li class="collection-item">
-    <input type="checkbox" :id="`task-${task.id}`"/>
+    <input type="checkbox" :id="`task-${task.id}`" :checked="task.is_done" v-on:change="toggleFinish"/>
     <label :for="`task-${task.id}`" v-text="task.title"/>
   </li>
 </template>
@@ -10,8 +10,12 @@ export default {
   props: ['task'],
 
   methods: {
-    handleChange () {
-      this.$emit('task-checked', this.task)
+    toggleFinish (e) {
+      const payload = {
+        task: this.task,
+        value: e.target.checked
+      }
+      this.$emit('toggleFinish', payload)
     }
   }
 }
