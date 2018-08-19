@@ -560,7 +560,7 @@ index bfe2cf0..3199376 100644
 -        <li id="row_task_3" class="collection-item">
 -          <input type="checkbox" id="task_3" />
 -          <label for="task_3">Sample Task</label>
-+        <li v-for="task in finishedTasks" :key="task.id" class="collection-item">
++        <li v-for="task in unfinishedTasks" :key="task.id" class="collection-item">
 +          <input type="checkbox" :id="`task-${task.id}`"/>
 +          <label for="`task-${task.id}`">{{ task.title }}</label>
          </li>
@@ -576,7 +576,7 @@ index bfe2cf0..3199376 100644
 -        <li id="row_task_5" class="collection-item">
 -          <input type="checkbox" id="'task_5" checked="checked" />
 -          <label v-bind:for="task_5" class="line-through">Done Task</label>
-+        <li v-for="task in unfinishedTasks" :key="task.id" class="collection-item">
++        <li v-for="task in finishedTasks" :key="task.id" class="collection-item">
 +          <input type="checkbox" :id="`task-${task.id}`" :checked="true"/>
 +          <label for="`task-${task.id}`">{{ task.title }}</label>
          </li>
@@ -637,21 +637,21 @@ index 3199376..9bd37b3 100644
    <div>
      <div>
        <ul class="collection">
--        <li v-for="task in finishedTasks" :key="task.id" class="collection-item">
+-        <li v-for="task in unfinishedTasks" :key="task.id" class="collection-item">
 -          <input type="checkbox" :id="`task-${task.id}`"/>
 -          <label for="`task-${task.id}`">{{ task.title }}</label>
 -        </li>
-+        <task v-for="task in finishedTasks" :key="task.id" :task="task"/>
++        <task v-for="task in unfinishedTasks" :key="task.id" :task="task"/>
        </ul>
      </div>
      <div class="btn">Display finished tasks</div>
      <div id="finished-tasks" class="display_none">
        <ul class="collection">
--        <li v-for="task in unfinishedTasks" :key="task.id" class="collection-item">
+-        <li v-for="task in finishedTasks" :key="task.id" class="collection-item">
 -          <input type="checkbox" :id="`task-${task.id}`" :checked="true"/>
 -          <label for="`task-${task.id}`">{{ task.title }}</label>
 -        </li>
-+        <task v-for="task in unfinishedTasks" :key="task.id" :task="task"/>
++        <task v-for="task in finishedTasks" :key="task.id" :task="task"/>
        </ul>
      </div>
    </div>
@@ -678,9 +678,121 @@ index 3199376..9bd37b3 100644
 
 Rất đơn giản đúng không?
 - Đầu tiên là import component vào.
-- Sau đó khai báo thêm component` `Task` ở chỗ export component.
+- Sau đó khai báo thêm `component` `Task` ở chỗ export component (`export default` ấy).
 - Sửa lại thẻ HTML, sử dụng component `<task>` thay cho thẻ `li`, code đã gọn đi rất nhiều.
 
 Tải lại trình duyệt và bạn có một kết quả không có gì thay đổi :joy:
 
 ## Làm việc với event bằng v-on và $emit
+
+Bây giờ mình muốn bắt sự kiện khi check vào các checkbox ở mỗi task để đánh dấu task đã done thì phải nàm thao?
+
+Theo "old fashioned way" thì cứ gắn class cho nó rồi `document.addEventListener` :joy:
+
+Thôi, Vue có cách dễ thương hơn đó là dùng `v-on`.
+
+```diff
+diff --git a/app/javascript/packs/components/task.vue b/app/javascript/packs/components/task.vue
+index 55547de..578c804 100644
+--- a/app/javascript/packs/components/task.vue
++++ b/app/javascript/packs/components/task.vue
+@@ -1,6 +1,6 @@
+ <template lang="html">
+   <li class="collection-item">
+-    <input type="checkbox" :id="`task-${task.id}`" :checked="task.is_done"/>
++    <input type="checkbox" :id="`task-${task.id}`" :checked="task.is_done" v-on:change="toggleFinish"/>
+     <label :for="`task-${task.id}`" v-text="task.title"/>
+   </li>
+ </template>
+@@ -10,8 +10,8 @@ export default {
+   props: ['task'],
+
++  methods: {
++    toggleFinish (e) {
++      console.log('checked?', e.target.checked)
++    }
++  }
+ }
+```
+
+Cú pháp của `v-on` là `v-on:<event_name>="<handler>"`. Trong đó `event_name` thì chắc các bạn đã quá quen thuộc rồi, như là `click`, `change`, `submit`, `type`, `keyup`,... rất rất nhiều, và `handler` chính là function handle event đó, function này có một đối số là object event chứa một số thông tin của event.
+
+`v-on` còn được viết gọn thành `@`, vậy là chỉ cần viết `@click="handler"` là vue có thể hiểu được ngon lành rồi, ko cần ghi dài dòng `v-on`.
+
+Bạn xem thêm tài liệu về [event handling tại đây](https://vuejs.org/v2/guide/events.html).
+
+Trở lại với đoạn code trên. Mình vừa thêm một sự kiện `change` cho checkbox, khi check/uncheck, function `toggleFinish` sẽ được gọi, tham số `e` ở handler đó chính là event object mà mình đã nhắc tới. Có thể bạn sẽ muốn chạy thử và xem qua trên console.
+
+Tiếp theo mình sẽ update lại cái `task` khi check/uncheck cái checkbox này. Nếu task đã done mình sẽ đưa nó về lại list unfinished, và ngược lại.
+
+Để làm việc này, mình sẽ chỉ muốn gọi API duy nhất 1 lần, code chung 1 hàm thay vì có 2 handler cho việc mark finish và mark unfinish, do đó việc gọi API các thứ mình sẽ đặt ở component cha (`home.vue`). Vậy là có 1 phương thức nào đó để giao tiếp chiều ngược lại từ component con sang component cha? :thinking_face:
+Mình xin giới thiệu `$emit`.
+
+Đầu tiên là code mẫu.
+```diff
+diff --git a/app/javascript/packs/components/task.vue b/app/javascript/packs/components/task.vue
+index 578c804..11df505 100644
+--- a/app/javascript/packs/components/task.vue
++++ b/app/javascript/packs/components/task.vue
+@@ -11,7 +11,7 @@ export default {
+
+   methods: {
+     toggleFinish (e) {
+-      console.log('e', e)
++      const payload = {
++        task: this.task,
++        value: e.target.checked
++      }
++      this.$emit('toggleFinish', payload)
+     }
+   }
+ }
+diff --git a/app/javascript/packs/pages/home.vue b/app/javascript/packs/pages/home.vue
+index 9bd37b3..e8ab8a3 100644
+--- a/app/javascript/packs/pages/home.vue
++++ b/app/javascript/packs/pages/home.vue
+@@ -2,13 +2,13 @@
+   <div>
+     <div>
+       <ul class="collection">
+-        <task v-for="task in unfinishedTasks" :key="task.id" :task="task"/>
++        <task v-for="task in unfinishedTasks" :key="task.id" :task="task" @toggleFinish="updateTask"/>
+       </ul>
+     </div>
+     <div class="btn">Display finished tasks</div>
+     <div id="finished-tasks" class="display_none">
+       <ul class="collection">
+-        <task v-for="task in finishedTasks" :key="task.id" :task="task"/>
++        <task v-for="task in finishedTasks" :key="task.id" :task="task" @toggleFinish="updateTask"/>
+       </ul>
+     </div>
+   </div>
+```
+
+Đầu tiên, mình `$emit` một sự kiện tên là `toggleFinish` và truyền sang 1 object. Mặc định hàm emit chỉ cho phép pass 2 arguments là tên sự kiện và 1 object, nên để truyền nhiều args hơn chúng ta có thể gói nó bên trong 1 object hoặc 1 mảng.
+
+Tiếp đến ở component cha, mình "lắng nghe" sự kiện đó `@toggleFinish` (hoặc `v-on:toggleFinish`) và gọi hàm `updateTask` để xử lý.
+
+Đây là hàm `updateTask` ở component `home.vue`
+
+```js
+updateTask: function ({task, value}) {
+  const data = {
+    task: { is_done: value }
+  }
+  axios.put(`/api/tasks/${task.id}`, data).then(
+    response => {
+      const index = this.tasks.indexOf(task)
+      this.tasks.splice(index, 1, response.data.task)
+    },
+    error => alert(error)
+  )
+}
+```
+- 2 đối số `task` và `value` của hàm chính là 2 đối tượng trong payload lúc nãy truyền vào.
+- Gọi API bằng `axios` để update task.
+- Sau khi update thành công, mình cập nhật lại list bằng cách thay thế object task cũ bằng object mới ở response. Hoặc đơn giản hơn bạn chỉ cần set thẳng `task.is_done = true`, nhưng ở đây mình muốn làm một cách tổng quát :joy:
+
+Bây giờ hãy thử một chút trên trình duyệt xem thế nào nhé.
+
+> Nhiệm vụ của bạn là gắn thêm event cho button `Display finished task` và thêm button destroy task.
