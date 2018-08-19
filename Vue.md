@@ -389,6 +389,31 @@ index 7a6a746..a52af98 100644
 Thử tắt server và khởi động lại, sau đó check lại ở browser, bạn đã có thể chuyển trang mà không bị reload page. :+1:
 ![Router](https://raw.githubusercontent.com/tdson/rails_vue_pratice/docs/assets/img/router.gif)
 
+Tuy nhiên, hãy thử truy cập đường dẫn `locahost:5000/about` hoặc thử refresh trang ở trang About, bạn sẽ nhận được lỗi từ Rails rằng app không tồn tại route đó.
+
+Để tránh tình trạng này, cần sửa một chút ở file `routes.rb`, trỏ tất cả các route có trên app Vue vào action `index` của controller `Home`
+
+```diff
+diff --git a/config/routes.rb b/config/routes.rb
+index d7e4ee7..80ce398 100644
+--- a/config/routes.rb
++++ b/config/routes.rb
+@@ -1,5 +1,7 @@
+ Rails.application.routes.draw do
+   root 'home#index'
++  get '/about', to: 'home#index'
++  get '/contact', to: 'home#index'
+
+   namespace :api, format: :json do
+     resources :tasks, except: [:edit, :new]
+```
+
+Hoặc nếu bạn sử dụng app Vue để thay thế toàn bộ phần views của Rails thì chỉ cần đơn giản trỏ hết tất cả các path của Rails vào cùng 1 action:
+```rb
+path "*", to: "home#index"
+```
+Như vậy bạn  không cần phải quan tâm đến việc quản lý routes ở phía Rails nữa, `Vue-Router` sẽ lo tất cả.
+
 ## Giao tiếp API bằng Axios
 [Axios](https://github.com/mzabriskie/axios) là một thư viện ajax rất nổi tiếng, có  lẽ mọi người đã quá quen thuộc với jQuery Ajax, nhưng hãy cứ thử thay đổi một chút xem những gì axios có thể làm được, và tại sao nó có gần 46k stars trên github.
 
