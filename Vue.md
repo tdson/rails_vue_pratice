@@ -821,3 +821,15 @@ updateTask: function ({task, value}) {
 Bây giờ hãy thử một chút trên trình duyệt xem thế nào nhé.
 
 > Nhiệm vụ của bạn là gắn thêm event cho button `Display finished task` và thêm button destroy task.
+
+# Tạm kết
+
+Đến đây chúng tâ đã hoàn thành một Vue app cơ bản, cũng như làm quen với các cú pháp của Vue, giao tiếp với API thông qua axios.
+
+Tuy nhiên một vấn đề khác đặt ra khi app phình lên quá lớn, số lượng các component không chỉ nhiều hơn mà còn lồng vào nhau rất nhiều cấp. Từ đó đặt ra vấn đề là khi có 1 sự kiện phát sinh từ một component con, muốn lắng nghe sự kiện từ một component cha nhưng 2 components này cách nhau đến 5-6 cấp thì phải làm thế nào? Hoặc muốn binding một prop từ component cha  component con - cháu - chắc - chút - chít thì phải làm sao?
+
+![](https://raw.githubusercontent.com/tdson/rails_vue_pratice/docs/assets/img/vue-binding-emit.png)
+
+Để giải quyết vấn đề này, ở bài viết tiếp mình xin giới thiệu một thư viện tên `vuex`, giúp quản lý `state` của toàn bộ app. Nếu các bạn đã có làm quen với `React` và biết đến `reddux` thì `vuex` cũng chính là thứ tương tự.
+
+Và sau cùng sẽ là một bài viết về Unit test trong Vue bằng thư viện `Jest` của Facebook.
