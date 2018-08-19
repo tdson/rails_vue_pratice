@@ -535,3 +535,152 @@ index af545de..bfe2cf0 100644
 Bây giờ có thể dùng `this.finishedTasks` và `this.unfinishedTasks` như data, chỉ là không dùng được phép gán (thật ra là được nhưng nó sẽ nằm ở một bài viết khác).
 
 ## Vòng lặp với v-for
+
+Để in ra danh sách các task, Vue cung cấp một cú pháp vòng lặp hết sức mạnh mẽ `v-for`
+
+Đầu tiên hãy xoá hết các thẻ `li` trong component `home` đi và thay thế vòng lặp như bên dưới.
+
+```diff
+diff --git a/app/javascript/packs/pages/home.vue b/app/javascript/packs/pages/home.vue
+index bfe2cf0..3199376 100644
+--- a/app/javascript/packs/pages/home.vue
++++ b/app/javascript/packs/pages/home.vue
+@@ -2,30 +2,18 @@
+   <div>
+     <div>
+       <ul class="collection">
+-        <li id="row_task_1" class="collection-item">
+-          <input type="checkbox" id="task_1" />
+-          <label for="task_1">Sample Task</label>
+-        </li>
+-        <li id="row_task_2" class="collection-item">
+-          <input type="checkbox" id="task_2" />
+-          <label for="task_2">Sample Task</label>
+-        </li>
+-        <li id="row_task_3" class="collection-item">
+-          <input type="checkbox" id="task_3" />
+-          <label for="task_3">Sample Task</label>
++        <li v-for="task in finishedTasks" :key="task.id" class="collection-item">
++          <input type="checkbox" :id="`task-${task.id}`"/>
++          <label for="`task-${task.id}`">{{ task.title }}</label>
+         </li>
+       </ul>
+     </div>
+     <div class="btn">Display finished tasks</div>
+     <div id="finished-tasks" class="display_none">
+       <ul class="collection">
+-        <li id="row_task_4" class="collection-item">
+-          <input type="checkbox" id="'task_4" checked="checked" />
+-          <label v-bind:for="task_4" class="line-through">Done Task</label>
+-        </li>
+-        <li id="row_task_5" class="collection-item">
+-          <input type="checkbox" id="'task_5" checked="checked" />
+-          <label v-bind:for="task_5" class="line-through">Done Task</label>
++        <li v-for="task in unfinishedTasks" :key="task.id" class="collection-item">
++          <input type="checkbox" :id="`task-${task.id}`" :checked="true"/>
++          <label for="`task-${task.id}`">{{ task.title }}</label>
+         </li>
+       </ul>
+     </div>
+```
+
+Bạn để ý kỹ cú pháp `v-for` sẽ yêu cầu binding thêm 1 prop là `key` (`:key="task.id"`). Bạn cần truyền vào một giá trị không trùng vào prop này để Vue có thể tracking chính xác và render lại khi có sự thay đổi.
+
+Bạn có thể xem thêm [tại đây](https://vuejs.org/v2/guide/list.html#key).
+
+Còn lại về cơ bản cú pháp `v-for` tương tự với vòng lặp `for` của javascript dành cho object.
+`v-for="task in finishedTasks"` sẽ lặp xuyên suốt mảng `finishedTasks`, gán giá trị ở mỗi lần lặp vào biến task, và sau đó bạn hoàn toàn có thể thao tác với biến `task`.
+
+Như vậy là chúng ta đã render được list các task động thông qua việc gọi API và dùng vòng lặp để render tự động.
+
+## Tách các component con
+Trong thực tế, trên một trang thường chứa rất nhiều components, component cùng cấp cũng có mà lồng nhau cũng rất nhiều.
+
+Việc phân tách thành các component con giúp việc quản lý code hiệu quả hơn, tránh làm một component phình ra quá to khi có quá nhiều logic phải xử lý.
+
+Trong practice này khối lượng code ở component `home` không quá nhiều để đến mức phải đem tách ra các component con, tuy nhiên để giới thiệu và thực hành, mình sẽ tiến hành tách các task thành từng component.
+
+Đầu tiên bạn tạo file `app/javascript/packs/components/task.vue` và move toàn bộ nội dung của thẻ `li` bên ở vòng `v-for` vào template.
+
+```html
+<template lang="html">
+  <li class="collection-item">
+    <input type="checkbox" :id="`task-${task.id}`"/>
+    <label :for="`task-${task.id}`" v-text="task.title" :checked="task.is_done"/>
+  </li>
+</template>
+
+<script>
+export default {
+  props: ['task']
+}
+</script>
+```
+
+Một số chỗ các bạn cần lưu lý:
+
+- `props: ['task']`: Tại component `home` sẽ bind 1 biến `task` sang bên này, để khai báo rằng component `task.vue` sẽ nhận 1 biến từ component cha chúng ta sẽ khai báo biến đó dưới dạng `props`. prop `task` các bạn cứ xem nó giống như `data` của component này vậy, nhưng __không được làm thay đổi giá trị của nó__ (chỉ đọc).
+
+- Cú pháp `v-text`, cú pháp này sẽ đưa toàn bộ string ở biến truyền vào thẻ html của bạn. Mình thường xuyên sử dụng cú pháp này thay thế cú pháp nội suy `{{ }}` nếu thẻ đó chỉ có 1 nội suy, code trông sẽ sáng sủa hơn nhiều, và mình cũng có thể bỏ luôn thẻ đóng của html. (Bạn nhìn lại xem thẻ label ko có thẻ đóng, mà mình đóng luôn ngay ở cuối thẻ `/>`).
+
+- `:checked="task.is_done"` Component này sẽ dùng chung cho cả 2 list là DS đã hoàn thành và DS task chưa hoàn thành, do dậy cần binding thuộc tính `checked` một cách động.
+
+
+Tiếp theo cần khai báo component này ở `home` và sử dụng thay thế thẻ `li`.
+
+```diff
+diff --git a/app/javascript/packs/pages/home.vue b/app/javascript/packs/pages/home.vue
+index 3199376..9bd37b3 100644
+--- a/app/javascript/packs/pages/home.vue
++++ b/app/javascript/packs/pages/home.vue
+@@ -2,19 +2,13 @@
+   <div>
+     <div>
+       <ul class="collection">
+-        <li v-for="task in finishedTasks" :key="task.id" class="collection-item">
+-          <input type="checkbox" :id="`task-${task.id}`"/>
+-          <label for="`task-${task.id}`">{{ task.title }}</label>
+-        </li>
++        <task v-for="task in finishedTasks" :key="task.id" :task="task"/>
+       </ul>
+     </div>
+     <div class="btn">Display finished tasks</div>
+     <div id="finished-tasks" class="display_none">
+       <ul class="collection">
+-        <li v-for="task in unfinishedTasks" :key="task.id" class="collection-item">
+-          <input type="checkbox" :id="`task-${task.id}`" :checked="true"/>
+-          <label for="`task-${task.id}`">{{ task.title }}</label>
+-        </li>
++        <task v-for="task in unfinishedTasks" :key="task.id" :task="task"/>
+       </ul>
+     </div>
+   </div>
+@@ -22,6 +16,7 @@
+
+ <script>
+ import axios from 'axios'
+ +import Task from '../components/task'
+
+  export default {
+    data: function () {
+ @@ -30,6 +25,10 @@ export default {
+      }
+    },
+
+ +  components: {
+ +    Task
+ +  },
+ +
+    computed: {
+      finishedTasks: function () {
+        return this.tasks.filter(task => task.is_done)
+```
+
+Rất đơn giản đúng không?
+- Đầu tiên là import component vào.
+- Sau đó khai báo thêm component` `Task` ở chỗ export component.
+- Sửa lại thẻ HTML, sử dụng component `<task>` thay cho thẻ `li`, code đã gọn đi rất nhiều.
+
+Tải lại trình duyệt và bạn có một kết quả không có gì thay đổi :joy:
+
+## Làm việc với event bằng v-on và $emit
